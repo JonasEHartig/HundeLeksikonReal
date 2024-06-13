@@ -1,0 +1,93 @@
+﻿@page "/hunde"
+@page "/hunde/{Id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+@if(Id is null)
+{
+    <PageTitle>Tilføj en ny hund</PageTitle>
+    <h3>Udfyld felterne infølge med hundes karakteristikker </h3>
+    <br/>
+}
+else
+{
+    <PageTitle>Redigere hund</PageTitle>
+    <h3>Redigere @hunde.HundeNavn</h3>
+}
+<EditForm Model="hunde" OnSubmit="HandleSubmit">
+    <div>
+        <label for="Hunde Navn">Hunde Navn</label>
+        <InputText id="HundeNavn" @bind-Value="hunde.HundeNavn" class="form-control" /> 
+    </div>  <br/>
+    <div>
+        <label for="FCIGrupper">FCI Gruppe</label>
+        <InputNumber id="FCIGrupper" @bind-Value="hunde.FCIGrupper" class="form-control" />
+    </div><br/>
+    <div>
+        <label for="Hunde Størrelse">Hunde Størrelse</label>
+        <InputNumber id="HundeStørrelse" @bind-Value="hunde.HundeStørrelse" class="form-control" />
+    </div><br />
+    <div>
+     <label for="Hunde Energi">Hunde Energi</label>
+     <InputNumber id="HundeEnergi" @bind-Value="hunde.HundeEnergi" class="form-control" />
+    </div><br />
+    <div>
+        <label for="Hunde Pelspleje">Hunde Pelspleje</label>
+        <InputNumber id="HundePelspleje" @bind-Value="hunde.HundePelspleje" class="form-control" />
+    </div><br />
+    <div>
+        <label for="Hunde Temperament">Hunde Temperament</label>
+        <InputNumber id="HundeTemperament" @bind-Value="hunde.HundeTemperament" class="form-control" />
+    </div><br />
+    <!--<div>
+        <label for="Hunde Beskrivelse">Hunde Beskrivelse</label>
+        <InputNumber id="HundeBeskrivelse" @bind-Value="hunde.HundeBeskrivelsen" class="form-control" />
+    </div><br />
+    -->
+    
+
+    <button type="submit" class="btn btn-primary">Tilføj</button>
+    @if (Id is not null)
+    {
+        <button type="button" class="btn btn-danger" @onclick="DeleteHund">Slet</button>
+    }
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    HundeData hunde = new HundeData { FCIGrupper = 0, HundeNavn = "Tilføj hund", HundeBeskrivelsen = ""};
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(Id is not null)
+        {
+            var result = await Http.GetFromJsonAsync<HundeData>($"api/hundeleksikon/{Id}");
+            if(result is not null)
+            {
+                hunde = result;
+            }
+        }
+    }
+
+
+    async Task DeleteHund()
+    {
+        await Http.DeleteAsync($"api/hundeleksikon/{Id}");
+        NavigationManager.NavigateTo("/hundeleksikon");
+
+    }
+
+    async Task HandleSubmit()
+    {
+        if(Id is null)
+        {
+            await Http.PostAsJsonAsync("api/hundeleksikon", hunde);
+        } 
+        else
+        {
+            await Http.PutAsJsonAsync($"api/hundeleksikon/{Id}", hunde);
+        }
+        NavigationManager.NavigateTo("/hundeleksikon");
+    }
+}

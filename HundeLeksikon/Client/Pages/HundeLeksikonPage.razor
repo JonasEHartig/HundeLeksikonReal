@@ -1,0 +1,53 @@
+﻿@page "/HundeLeksikon"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+
+<h3>Hunde Leksikon</h3>
+
+<button @onclick="CreateHunde" class="btn btn-primary"> Tilføj Hund</button>
+<br/>
+<br />
+
+@if(hunde is null)
+{
+    <span>Finder hundende frem...</span>
+}
+else
+{
+    <QuickGrid Items="hunde.AsQueryable()">
+        <PropertyColumn Property="g => g.HundeNavn" />
+        <PropertyColumn Property="g => g.FCIGrupper"/>
+        <PropertyColumn Property="g => g.HundeStørrelse" />
+        <PropertyColumn Property="g => g.HundeTemperament" />
+        <PropertyColumn Property="g => g.HundeEnergi" />
+        <PropertyColumn Property="g => g.HundePelspleje" />
+        <PropertyColumn Property="g => g.HundeBeskrivelsen" />
+        <TemplateColumn>
+            <button @onclick="(() => EditHund(context.HundeId))" class="btn btn-primary">Edit</button>
+        </TemplateColumn>
+    </QuickGrid>
+   
+}
+
+
+@code {
+    List<HundeData>? hunde;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await Http.GetFromJsonAsync<List<HundeData>>("api/HundeLeksikon");
+        if (result != null)
+            hunde = result;
+    }
+
+    void CreateHunde()
+    {
+        NavigationManager.NavigateTo("/hunde");
+    }
+
+    void EditHund(int Id)
+    {
+        NavigationManager.NavigateTo($"/hunde/{Id}");
+    }
+}
